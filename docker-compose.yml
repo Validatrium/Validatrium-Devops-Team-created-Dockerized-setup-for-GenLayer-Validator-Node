@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  validator:
+    build:
+      context: .
+      args:
+        GENLAYER_VERSION: v0.3.10   # change when new version released
+    container_name: genlayer-validator
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./configs/node:/opt/genlayer/configs/node
+      - ./data:/opt/genlayer/data
+      - ./logs:/opt/genlayer/logs
+    command: >
+      run -c /opt/genlayer/configs/node/config.yaml
+      --password ${NODE_PASSWORD}
+    ports:
+      - "9151:9151"   # RPC
+      - "9153:9153"   # Metrics
+      - "9155:9155"   # Admin
+    depends_on:
+      - webdriver
+
+  webdriver:
+    image: selenium/standalone-chrome:126.0
+    container_name: genlayer-webdriver
+    restart: unless-stopped
+    shm_size: "2g"
+    ports:
+      - "4444:4444"
